@@ -1,10 +1,14 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
-import { Route } from 'react-router-dom';
+import { BrowserRouter, Route, Switch } from 'react-router-dom';
+import Main from './pages/Main';
 
-function App() {
-  return <></>;
-}
+const App:React.FC = () => (
+  <BrowserRouter>
+    <Switch>
+      <Route path="/" exact component={Main} />
+    </Switch>
+  </BrowserRouter>
+)
 
 export default App;
