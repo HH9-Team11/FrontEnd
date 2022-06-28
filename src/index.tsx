@@ -6,6 +6,12 @@ import reportWebVitals from './reportWebVitals';
 import App from './App';
 import './index.css';
 
+declare global {
+  interface Window {
+    kakao: any;
+  }
+}
+
 ReactDOM.render(
   <Provider store={store}>
     <App />
