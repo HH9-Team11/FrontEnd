@@ -11,6 +11,11 @@ declare global {
     kakao: any;
   }
 }
+// declare global {
+//   interface Window {
+//     daum: any;
+//   }
+// }
 
 ReactDOM.render(
   <Provider store={store}>
