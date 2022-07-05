@@ -2,7 +2,6 @@ import styled from 'styled-components';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import React, { useEffect, useRef, useState } from 'react';
 import DaumPostcode from 'react-daum-postcode';
-import { Blob } from 'buffer';
 
 interface FormValue {
   userId: string;
@@ -69,8 +68,8 @@ const Signup = () => {
   const imageHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     const fileList = e.target.files;
     if (fileList != null) {
-      const currentUmageUrl: string = URL.createObjectURL(fileList[0]);
-      setImagePreview(currentUmageUrl);
+      const currentImageUrl: string = URL.createObjectURL(fileList[0]);
+      setImagePreview(currentImageUrl);
     }
   };
 
@@ -139,7 +138,7 @@ const Signup = () => {
             maxLength={20}
           />
           {errors.userId?.type === 'required' && (
-            <div className='errorMsg'>필수 입력란 입니다!</div>
+            <div className='errorMsg'>아이디를 입력해 주세요!</div>
           )}
           {errors.userId?.type === 'maxLength' && (
             <div className='errorMsg'>
