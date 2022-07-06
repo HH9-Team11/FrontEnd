@@ -2,7 +2,10 @@ import styled from 'styled-components';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import React, { useEffect, useRef, useState } from 'react';
 import DaumPostcode from 'react-daum-postcode';
+import axios from 'axios';
+import { userApis } from '../apis/userApis';
 
+// 폼데이터 타입 설정
 interface FormValue {
   userId: string;
   passWord: string;
@@ -16,6 +19,7 @@ interface FormValue {
   lng: number;
 }
 
+// 셀렉트 옵션들
 const dogSizeOptions = [
   { value: 'none', label: '선택하세요' },
   { value: '소형견', label: '소형견' },
@@ -54,7 +58,10 @@ const Signup = () => {
   const [imagePreview, setImagePreview] = useState<string>('');
   const [fileName, setFrileName] =
     useState<string>('강아지 사진을 올려주세요!');
+  const [lat, setLat] = useState<string>('');
+  const [lng, setLng] = useState<string>('');
 
+  // 훅 폼 구조분해할당
   const {
     register,
     handleSubmit,
@@ -62,19 +69,18 @@ const Signup = () => {
     formState: { errors },
   } = useForm<FormValue>();
 
+  // 비밀번호 확인
   const passwordRef = useRef<string | null>(null);
   passwordRef.current = watch('passWord');
 
+  // 이미지 이벤트 프리뷰 추가
   const imageHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     const fileList = e.target.files;
     if (fileList != null) {
+      setFile(fileList);
       const currentImageUrl: string = URL.createObjectURL(fileList[0]);
       setImagePreview(currentImageUrl);
     }
-  };
-
-  const onSubmitHandler: SubmitHandler<FormValue> = (data) => {
-    console.log(data);
   };
 
   useEffect(() => {
@@ -95,6 +101,8 @@ const Signup = () => {
           // 새로운 좌표로 변경
           const coords = new window.kakao.maps.LatLng(result[0].y, result[0].x);
           console.log(coords);
+          setLat(coords.La);
+          setLng(coords.Ma);
           const marker = new window.kakao.maps.Marker({
             map: map,
             position: coords,
@@ -121,6 +129,39 @@ const Signup = () => {
 
   const modalstate = () => {
     setOpen(!open);
+  };
+
+  // 서버 통신
+  const onSubmitHandler: SubmitHandler<FormValue> = async (data) => {
+    const formData = new FormData();
+    console.log(data);
+    const allData = {
+      username: data.userId,
+      password: data.passWord,
+      dogName: data.dogName,
+      dogAge: data.dogAge,
+      dogSize: data.dogSize,
+      dogGender: data.dogGender,
+      address,
+      lat,
+      lng,
+    };
+    formData.append(
+      'data',
+      new Blob([JSON.stringify(allData)], {
+        type: 'application/json',
+      })
+    );
+    if (file) {
+      formData.append('img', file[0]);
+    }
+
+    try {
+      const aaa = await userApis.signup(formData);
+      console.log(aaa);
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   return (
@@ -234,6 +275,8 @@ const Signup = () => {
           {errors.dogGender?.type === 'required' && (
             <div className='errorMsg'>아이디 눌러</div>
           )}
+
+          {/* 여기부터는 이미지 추가 */}
           <Label htmlFor='image'>{fileName}</Label>
           {imagePreview ? (
             <img className='imgBox' src={imagePreview} />
@@ -243,6 +286,7 @@ const Signup = () => {
 
           <input id='image' type='file' onChange={imageHandler} />
 
+          {/* 여기부터는 주소 추가 */}
           <Input defaultValue={address} placeholder='예) 카카오' />
           <div onClick={modalstate}>주소검색</div>
           {open === true && (
