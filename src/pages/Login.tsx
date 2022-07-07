@@ -1,28 +1,24 @@
 import { SubmitHandler, useForm } from 'react-hook-form';
 import styled from 'styled-components';
+import { useAppDispatch } from '../redux/configureStore';
+import { login, setUserInfo } from '../redux/modules/user';
 
 interface FormValue {
-  userId: string;
-  passWord: string;
-  passWordCehck: string;
-  dogName: string;
-  dogAge: number;
-  dogSize: string;
-  dogGender: string;
-  address: string;
-  lat: number;
-  lng: number;
+  username: string;
+  password: string;
 }
 const Login = () => {
+  const dispatch = useAppDispatch();
+
   const {
     register,
     handleSubmit,
-    watch,
     formState: { errors },
   } = useForm<FormValue>();
 
   const onSubmitHandler: SubmitHandler<FormValue> = (data) => {
     console.log(data);
+    dispatch(login(data));
   };
   return (
     <form onSubmit={handleSubmit(onSubmitHandler)}>
@@ -30,7 +26,7 @@ const Login = () => {
         <Body>
           <Label>아이디</Label>
           <Input
-            {...register('passWord', {
+            {...register('username', {
               required: true,
               maxLength: 20,
             })}
@@ -38,7 +34,7 @@ const Login = () => {
           />
           <Label>비밀번호</Label>
           <Input
-            {...register('passWord', {
+            {...register('password', {
               required: true,
               maxLength: 20,
             })}
