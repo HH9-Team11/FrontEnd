@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosRequestConfig } from 'axios';
 
 axios.defaults.withCredentials = true;
 
@@ -16,6 +16,14 @@ export const formDataAxios = axios.create({
   headers: {
     'content-type': 'multipart/form-data',
   },
+});
+
+instance.interceptors.request.use((config: AxiosRequestConfig) => {
+  config.headers!['Content-Type'] = 'application/json; charset=utf-8';
+  config.headers!['Access-Control-Allow-Origin'] = '*';
+  config.headers!['Access-Control-Allow-Credentials'] = true;
+  config.headers!.withCredentials = true;
+  return config;
 });
 
 export default instance;
