@@ -1,4 +1,5 @@
 import { SubmitHandler, useForm } from 'react-hook-form';
+import { useHistory } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAppDispatch } from '../redux/configureStore';
 import { login, setUserInfo } from '../redux/modules/user';
@@ -9,6 +10,7 @@ interface FormValue {
 }
 const Login = () => {
   const dispatch = useAppDispatch();
+  const history = useHistory();
 
   const {
     register,
@@ -17,8 +19,8 @@ const Login = () => {
   } = useForm<FormValue>();
 
   const onSubmitHandler: SubmitHandler<FormValue> = (data) => {
-    console.log(data);
     dispatch(login(data));
+    history.replace('map');
   };
   return (
     <form onSubmit={handleSubmit(onSubmitHandler)}>
