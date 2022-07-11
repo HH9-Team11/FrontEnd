@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import DaumPostcode from 'react-daum-postcode';
 import axios from 'axios';
 import { userApis } from '../apis/userApis';
+import { useHistory } from 'react-router-dom';
 
 // 폼데이터 타입 설정
 interface FormValue {
@@ -22,9 +23,9 @@ interface FormValue {
 // 셀렉트 옵션들
 const dogSizeOptions = [
   { value: 'none', label: '선택하세요' },
-  { value: '소형견', label: '소형견' },
-  { value: '중형견', label: '중형견' },
-  { value: '대형견', label: '대형견' },
+  { value: '소형', label: '소형견' },
+  { value: '중형', label: '중형견' },
+  { value: '대형', label: '대형견' },
 ];
 const dogAgeOptions = [
   { value: 0, label: '선택하세요' },
@@ -60,6 +61,7 @@ const Signup = () => {
     useState<string>('강아지 사진을 올려주세요!');
   const [lat, setLat] = useState<string>('');
   const [lng, setLng] = useState<string>('');
+  const histroy = useHistory();
 
   // 훅 폼 구조분해할당
   const {
@@ -100,7 +102,7 @@ const Signup = () => {
         if (status === window.kakao.maps.services.Status.OK) {
           // 새로운 좌표로 변경
           const coords = new window.kakao.maps.LatLng(result[0].y, result[0].x);
-          console.log(coords);
+
           setLat(coords.La);
           setLng(coords.Ma);
           const marker = new window.kakao.maps.Marker({
@@ -138,10 +140,10 @@ const Signup = () => {
     const allData = {
       username: data.userId,
       password: data.passWord,
-      dogName: data.dogName,
-      dogAge: data.dogAge,
-      dogSize: data.dogSize,
-      dogGender: data.dogGender,
+      petName: data.dogName,
+      petAge: data.dogAge,
+      petSize: data.dogSize,
+      petGender: data.dogGender,
       address,
       lat,
       lng,
@@ -158,7 +160,7 @@ const Signup = () => {
 
     try {
       const aaa = await userApis.signup(formData);
-      console.log(aaa);
+      histroy.replace('login');
     } catch (e) {
       console.log(e);
     }
