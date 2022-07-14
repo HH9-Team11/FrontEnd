@@ -5,6 +5,8 @@ import store from './redux/configureStore';
 import reportWebVitals from './reportWebVitals';
 import App from './App';
 import './index.css';
+import { QueryClient, QueryClientProvider } from "react-query";
+import { ReactQueryDevtools } from "react-query/devtools";
 
 declare global {
   interface Window {
@@ -16,10 +18,13 @@ declare global {
 //     daum: any;
 //   }
 // }
+const queryClient = new QueryClient();
 
 ReactDOM.render(
   <Provider store={store}>
-    <App />
+    <QueryClientProvider client={queryClient}>
+        <App />
+    </QueryClientProvider>
   </Provider>,
   document.getElementById('root') as HTMLElement
 );
