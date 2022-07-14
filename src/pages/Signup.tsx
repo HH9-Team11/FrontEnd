@@ -11,7 +11,7 @@ interface FormValue {
   passWord: string;
   passWordCehck: string;
   dogName: string;
-  dogAge: number;
+  dogAge: string;
   dogSize: string;
   dogGender: string;
   address: string;
@@ -27,7 +27,7 @@ const dogSizeOptions = [
   { value: '대형', label: '대형견' },
 ];
 const dogAgeOptions = [
-  { value: 0, label: '선택하세요' },
+  { value: 'none', label: '선택하세요' },
   { value: 0, label: '1살 미만' },
   { value: 1, label: '1살' },
   { value: 2, label: '2살' },
@@ -79,6 +79,7 @@ const Signup = () => {
     const fileList = e.target.files;
     if (fileList != null) {
       setFile(fileList);
+      setFrileName(fileList[0].name);
       const currentImageUrl: string = URL.createObjectURL(fileList[0]);
       setImagePreview(currentImageUrl);
     }
@@ -138,7 +139,19 @@ const Signup = () => {
   // 서버 통신
   const onSubmitHandler: SubmitHandler<FormValue> = async (data) => {
     const formData = new FormData();
-    console.log(data);
+
+    if (data.dogSize === 'none') {
+      alert('강아지 크키를 정해주세요!');
+      return;
+    }
+    if (data.dogAge === 'none') {
+      alert('강아지 나이를 정해주세요!');
+      return;
+    }
+    if (data.dogGender === 'none') {
+      alert('강아지 성별을 정해주세요!');
+      return;
+    }
     if (!file) {
       alert('강아지 사진을 등록해 주세요!');
       return;
@@ -171,8 +184,11 @@ const Signup = () => {
     try {
       await userApis.signup(formData);
       histroy.replace('login');
-    } catch (e) {
-      console.log(e);
+    } catch (e: any) {
+      if (e.message === 'Request failed with status code 400') {
+        alert('해당 아이디가 이미 존재합니다.');
+        return;
+      }
     }
   };
 
@@ -212,6 +228,7 @@ const Signup = () => {
               pattern: /^[A-Za-z0-9]{6,20}$/,
             })}
             type='password'
+            placeholder='*********'
             maxLength={25}
           />
           {errors.passWord?.type === 'required' && (
@@ -234,6 +251,7 @@ const Signup = () => {
               validate: (value) => value === passwordRef.current,
             })}
             type='password'
+            placeholder='*********'
             maxLength={25}
           />
           {errors.passWordCehck?.type === 'required' && (
@@ -243,7 +261,10 @@ const Signup = () => {
             <div className='errorMsg'>비밀번호가 같지 않습니다!</div>
           )}
           <Label>강아지 이름</Label>
-          <Input {...register('dogName', { required: true, maxLength: 12 })} />
+          <Input
+            {...register('dogName', { required: true, maxLength: 12 })}
+            placeholder='ex) 레옹이'
+          />
 
           {errors.dogName?.type === 'required' && (
             <div className='errorMsg'>강아지 이름을 적어 주세요!</div>
@@ -251,52 +272,47 @@ const Signup = () => {
 
           <Label>강아지 크기 셀렉터로</Label>
           <Select {...register('dogSize', { required: true, maxLength: 12 })}>
-            {dogSizeOptions.map((a, idx) => (
+            {dogSizeOptions.map((a) => (
               <option key={a.label} value={a.value}>
                 {a.label}
               </option>
             ))}
           </Select>
-
-          {errors.dogSize?.type === 'required' && (
-            <div className='errorMsg'>아이디 눌러</div>
-          )}
 
           <Label>강아지 나이</Label>
           <Select {...register('dogAge', { required: true, maxLength: 12 })}>
-            {dogAgeOptions.map((a, idx) => (
+            {dogAgeOptions.map((a) => (
               <option key={a.label} value={a.value}>
                 {a.label}
               </option>
             ))}
           </Select>
-
-          {errors.dogAge?.type === 'required' && (
-            <div className='errorMsg'>아이디 눌러</div>
-          )}
 
           <Label>강아지 성별</Label>
           <Select {...register('dogGender', { required: true, maxLength: 12 })}>
-            {dogGenderOptions.map((a, idx) => (
+            {dogGenderOptions.map((a) => (
               <option key={a.label} value={a.value}>
                 {a.label}
               </option>
             ))}
           </Select>
 
-          {errors.dogGender?.type === 'required' && (
-            <div className='errorMsg'>아이디 눌러</div>
-          )}
-
           {/* 여기부터는 이미지 추가 */}
-          <Label htmlFor='image'>{fileName}</Label>
+          <ImageLabel htmlFor='image'>
+            {fileName}
+            <input
+              style={{ display: 'none' }}
+              id='image'
+              type='file'
+              accept='.jpg,.png'
+              onChange={imageHandler}
+            />
+          </ImageLabel>
           {imagePreview ? (
             <img className='imgBox' src={imagePreview} />
           ) : (
             <div className='notImgBox' />
           )}
-
-          <input id='image' type='file' onChange={imageHandler} />
 
           {/* 여기부터는 주소 추가 */}
           <div className='addressBox'>
@@ -327,6 +343,18 @@ const Signup = () => {
     </form>
   );
 };
+
+const ImageLabel = styled.label`
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  color: #363062;
+  font-size: 20px;
+  cursor: pointer;
+  :hover {
+    font-weight: bold;
+  }
+`;
 
 const AddressInput = styled.input`
   width: 320px;
