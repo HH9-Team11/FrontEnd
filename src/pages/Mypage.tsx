@@ -1,24 +1,48 @@
 import * as React from 'react';
 import styled from 'styled-components';
 import { useHistory } from 'react-router-dom';
+import Cookies from 'universal-cookie';
+import jwtDecode from 'jwt-decode';
+
+import { mypageActionCreators } from '../redux/modules/mypage';
+import { RootState, useAppDispatch } from '../redux/configureStore';
+import { useSelector } from 'react-redux';
 
 export default function Mypage() {
+
+    interface UserInfo {
+        USER_ID : number,
+     }
+
     const history = useHistory();
+    const cookies = new Cookies();
+    const appDispatch = useAppDispatch();
+
+    React.useEffect(() => {
+        const userInfo = cookies.get("accessToken");
+        const tokenData:UserInfo = jwtDecode(userInfo);
+        const userId = tokenData.USER_ID;
+        cookies.set("userId", userId);
+
+        appDispatch(mypageActionCreators.mypage(userId));
+      }, []);
+
+    const userInfoData = useSelector((store: RootState) => store.mypage);
 
   return (
     <Wrap>
         <Box>
             <ImageBox>
-                <img src="https://i.pinimg.com/564x/aa/f0/a9/aaf0a937ef732705d82a7df16bdc1c14.jpg" />
+                <img src={userInfoData.img} />
                 <button onClick={()=>{history.push("/")}}>수정</button>
             </ImageBox>
 
             <ListBox>
-                <div>이름 : 강쥐</div>
-                <div>크기 : 소형</div>
-                <div>나이 : 2세</div>
-                <div>성별 : 여</div>
-                <div>주소지 : 서울시~</div>
+                <div>이름 : {userInfoData.name}</div>
+                <div>크기 : {userInfoData.size}</div>
+                <div>나이 : {userInfoData.age}세</div>
+                <div>성별 : {userInfoData.gender}</div>
+                <div>주소지 : {userInfoData.address}</div>
             </ListBox>
         </Box>
     </Wrap>

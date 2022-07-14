@@ -1,13 +1,41 @@
-import * as React from 'react';
+import React, { ChangeEvent, useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { useHistory } from 'react-router-dom';
 import styled from 'styled-components';
+import Cookies from 'universal-cookie';
+import { useAppDispatch } from '../redux/configureStore';
+import { msgPostDB } from '../redux/modules/message';
 
 export default function MessageWrite() {
+
+    const cookies = new Cookies();
+
+    const history = useHistory();
+    const appDispatch = useAppDispatch();
+    const [content, setContent] = useState<string>('');
+
+    const ContentFrom = (e : ChangeEvent<HTMLTextAreaElement>) => {
+        setContent(e.target.value);
+    }
+
+    const sendMsg = () => {
+        appDispatch(msgPostDB({ senderId : parseInt(cookies.get("userId")), receiverId : 16, content : content}));
+        // history.replace("/messageList");
+    }
+
+// console.log(content);
+
   return (
     <Wrap>
         <Box>
             <div>아이디(닉네임)</div>
-            <textarea/>
-            <button>SEND</button>
+            <textarea placeholder='내용을 입력하세요' autoFocus maxLength={200} onChange={ContentFrom}/>
+            
+            {
+                content === '' || !content
+                ? <button disabled>SEND</button>
+                : <button onClick={sendMsg}>SEND</button>
+            }
         </Box>
       
     </Wrap>

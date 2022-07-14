@@ -1,9 +1,14 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import { useDispatch } from 'react-redux';
 import userSlice from './modules/user';
+import mypageSlice from './modules/mypage';
+import msgSlice from './modules/message';
+
 
 const rootReducer = combineReducers({
   user: userSlice.reducer,
+  mypage : mypageSlice.reducer,
+  msg : msgSlice.reducer,
 });
 
 export const store = configureStore({
