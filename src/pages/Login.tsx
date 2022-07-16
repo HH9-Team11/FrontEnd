@@ -2,7 +2,7 @@ import { SubmitHandler, useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAppDispatch } from '../redux/configureStore';
-import { login, setUserInfo } from '../redux/modules/user';
+import { login } from '../redux/modules/user';
 
 interface FormValue {
   username: string;
