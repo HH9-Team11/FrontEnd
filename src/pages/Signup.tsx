@@ -14,9 +14,6 @@ interface FormValue {
   dogAge: string;
   dogSize: string;
   dogGender: string;
-  address: string;
-  lat: number;
-  lng: number;
 }
 
 // 셀렉트 옵션들
@@ -229,7 +226,7 @@ const Signup = () => {
             })}
             type='password'
             placeholder='*********'
-            maxLength={25}
+            minLength={6}
           />
           {errors.passWord?.type === 'required' && (
             <div className='errorMsg'>비밀번호를 입력해 주세요!</div>
@@ -421,7 +418,7 @@ const SignupBtn = styled.button`
 `;
 const Body = styled.div`
   width: 542px;
-  height: 1080px;
+
   margin: 0 auto;
   background-color: #fff;
   .addressBox {
