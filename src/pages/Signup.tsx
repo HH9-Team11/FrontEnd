@@ -2,7 +2,6 @@ import styled from 'styled-components';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import React, { useEffect, useRef, useState } from 'react';
 import DaumPostcode from 'react-daum-postcode';
-import axios from 'axios';
 import { userApis } from '../apis/userApis';
 import { useHistory } from 'react-router-dom';
 
@@ -12,12 +11,9 @@ interface FormValue {
   passWord: string;
   passWordCehck: string;
   dogName: string;
-  dogAge: number;
+  dogAge: string;
   dogSize: string;
   dogGender: string;
-  address: string;
-  lat: number;
-  lng: number;
 }
 
 // 셀렉트 옵션들
@@ -28,7 +24,7 @@ const dogSizeOptions = [
   { value: '대형', label: '대형견' },
 ];
 const dogAgeOptions = [
-  { value: 0, label: '선택하세요' },
+  { value: 'none', label: '선택하세요' },
   { value: 0, label: '1살 미만' },
   { value: 1, label: '1살' },
   { value: 2, label: '2살' },
@@ -80,6 +76,7 @@ const Signup = () => {
     const fileList = e.target.files;
     if (fileList != null) {
       setFile(fileList);
+      setFrileName(fileList[0].name);
       const currentImageUrl: string = URL.createObjectURL(fileList[0]);
       setImagePreview(currentImageUrl);
     }
@@ -93,6 +90,10 @@ const Signup = () => {
       level: 1, //지도의 레벨(확대, 축소 정도)
     };
     const map = new window.kakao.maps.Map(container, options); //지도 생성 및 객체 리턴
+    //드래그 막기
+    map.setDraggable(false);
+    //줌 막기
+    map.setZoomable(false);
     const geocoder = new window.kakao.maps.services.Geocoder();
     if (address === '') {
       return;
@@ -102,7 +103,6 @@ const Signup = () => {
         if (status === window.kakao.maps.services.Status.OK) {
           // 새로운 좌표로 변경
           const coords = new window.kakao.maps.LatLng(result[0].y, result[0].x);
-
           setLat(coords.La);
           setLng(coords.Ma);
           const marker = new window.kakao.maps.Marker({
@@ -136,7 +136,27 @@ const Signup = () => {
   // 서버 통신
   const onSubmitHandler: SubmitHandler<FormValue> = async (data) => {
     const formData = new FormData();
-    console.log(data);
+
+    if (data.dogSize === 'none') {
+      alert('강아지 크키를 정해주세요!');
+      return;
+    }
+    if (data.dogAge === 'none') {
+      alert('강아지 나이를 정해주세요!');
+      return;
+    }
+    if (data.dogGender === 'none') {
+      alert('강아지 성별을 정해주세요!');
+      return;
+    }
+    if (!file) {
+      alert('강아지 사진을 등록해 주세요!');
+      return;
+    }
+    if (!address) {
+      alert('주소를 입력해 주세요!');
+      return;
+    }
     const allData = {
       username: data.userId,
       password: data.passWord,
@@ -159,10 +179,13 @@ const Signup = () => {
     }
 
     try {
-      const aaa = await userApis.signup(formData);
+      await userApis.signup(formData);
       histroy.replace('login');
-    } catch (e) {
-      console.log(e);
+    } catch (e: any) {
+      if (e.message === 'Request failed with status code 400') {
+        alert('해당 아이디가 이미 존재합니다.');
+        return;
+      }
     }
   };
 
@@ -202,7 +225,8 @@ const Signup = () => {
               pattern: /^[A-Za-z0-9]{6,20}$/,
             })}
             type='password'
-            maxLength={25}
+            placeholder='*********'
+            minLength={6}
           />
           {errors.passWord?.type === 'required' && (
             <div className='errorMsg'>비밀번호를 입력해 주세요!</div>
@@ -224,6 +248,7 @@ const Signup = () => {
               validate: (value) => value === passwordRef.current,
             })}
             type='password'
+            placeholder='*********'
             maxLength={25}
           />
           {errors.passWordCehck?.type === 'required' && (
@@ -233,7 +258,10 @@ const Signup = () => {
             <div className='errorMsg'>비밀번호가 같지 않습니다!</div>
           )}
           <Label>강아지 이름</Label>
-          <Input {...register('dogName', { required: true, maxLength: 12 })} />
+          <Input
+            {...register('dogName', { required: true, maxLength: 12 })}
+            placeholder='ex) 레옹이'
+          />
 
           {errors.dogName?.type === 'required' && (
             <div className='errorMsg'>강아지 이름을 적어 주세요!</div>
@@ -241,56 +269,58 @@ const Signup = () => {
 
           <Label>강아지 크기 셀렉터로</Label>
           <Select {...register('dogSize', { required: true, maxLength: 12 })}>
-            {dogSizeOptions.map((a, idx) => (
+            {dogSizeOptions.map((a) => (
               <option key={a.label} value={a.value}>
                 {a.label}
               </option>
             ))}
           </Select>
-
-          {errors.dogSize?.type === 'required' && (
-            <div className='errorMsg'>아이디 눌러</div>
-          )}
 
           <Label>강아지 나이</Label>
           <Select {...register('dogAge', { required: true, maxLength: 12 })}>
-            {dogAgeOptions.map((a, idx) => (
+            {dogAgeOptions.map((a) => (
               <option key={a.label} value={a.value}>
                 {a.label}
               </option>
             ))}
           </Select>
-
-          {errors.dogAge?.type === 'required' && (
-            <div className='errorMsg'>아이디 눌러</div>
-          )}
 
           <Label>강아지 성별</Label>
           <Select {...register('dogGender', { required: true, maxLength: 12 })}>
-            {dogGenderOptions.map((a, idx) => (
+            {dogGenderOptions.map((a) => (
               <option key={a.label} value={a.value}>
                 {a.label}
               </option>
             ))}
           </Select>
 
-          {errors.dogGender?.type === 'required' && (
-            <div className='errorMsg'>아이디 눌러</div>
-          )}
-
           {/* 여기부터는 이미지 추가 */}
-          <Label htmlFor='image'>{fileName}</Label>
+          <ImageLabel htmlFor='image'>
+            {fileName}
+            <input
+              style={{ display: 'none' }}
+              id='image'
+              type='file'
+              accept='.jpg,.png'
+              onChange={imageHandler}
+            />
+          </ImageLabel>
           {imagePreview ? (
             <img className='imgBox' src={imagePreview} />
           ) : (
             <div className='notImgBox' />
           )}
 
-          <input id='image' type='file' onChange={imageHandler} />
-
           {/* 여기부터는 주소 추가 */}
-          <Input defaultValue={address} placeholder='예) 카카오' />
-          <div onClick={modalstate}>주소검색</div>
+          <div className='addressBox'>
+            <AddressInput
+              defaultValue={address}
+              placeholder='예) 카카오'
+              readOnly
+            />
+            <AddressBtn onClick={modalstate}>주소검색</AddressBtn>
+          </div>
+
           {open === true && (
             <div>
               <DaumPostcode onComplete={completeHandler} />
@@ -311,16 +341,47 @@ const Signup = () => {
   );
 };
 
+const ImageLabel = styled.label`
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  color: #363062;
+  font-size: 20px;
+  cursor: pointer;
+  :hover {
+    font-weight: bold;
+  }
+`;
+
+const AddressInput = styled.input`
+  width: 320px;
+  height: 40px;
+  border-radius: 15px;
+  border: 1px solid gray;
+  padding: 5px 16px 5px 16px;
+  font-size: 15px;
+  color: #363062;
+`;
+
+const AddressBtn = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-left: -70px;
+  color: #363062;
+  font-weight: bold;
+  cursor: pointer;
+`;
+
 const Container = styled.div`
-  background-color: gray;
-  width: 1920px;
-  height: 1080px;
+  background-color: #e9d5ca;
   display: flex;
 `;
 const Label = styled.label`
   margin: 0 auto;
   display: flex;
   justify-content: center;
+  color: #363062;
 `;
 const Select = styled.select`
   width: 350px;
@@ -330,20 +391,40 @@ const Select = styled.select`
   border-radius: 15px;
   border: 1px solid gray;
   font-size: 15px;
+  color: #363062;
 `;
 const Input = styled.input`
-  width: 350px;
-  height: 50px;
+  width: 320px;
+  height: 40px;
   display: flex;
   margin: 5px auto;
   border-radius: 15px;
   border: 1px solid gray;
+  padding: 5px 16px 5px 16px;
   font-size: 15px;
+  color: #363062;
 `;
-const SignupBtn = styled.button``;
+const SignupBtn = styled.button`
+  display: flex;
+  margin: 10px auto;
+  border-radius: 10px;
+  width: 100px;
+  height: 40px;
+  font-size: 20px;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+`;
 const Body = styled.div`
   width: 542px;
+
+  margin: 0 auto;
   background-color: #fff;
+  .addressBox {
+    display: flex;
+    margin: 10px 100px;
+  }
   .errorMsg {
     display: flex;
     color: red;
